@@ -1,0 +1,9 @@
+{% extends 'admin/change_form.html' %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        <a href="{% url 'admin:print_view' object_id=original.id %}" class="historylink">Print</a>
+    </li>
+{% endblock %}
+

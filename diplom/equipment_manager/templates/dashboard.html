@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Моё оборудование</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .container {
+            width: 80%;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .section p {
+            margin-bottom: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Моё оборудование</h1>
+        {% if license_timer %}
+            <div class="section">
+                <h2>До конца лицензии осталось</h2>
+                <p>ОС: {{ license_timer.os_timer }}</p>
+                <p id="os-countdown">Обратный отсчет ОС: </p>
+                <p>Антивирус: {{ license_timer.antivirus_timer }}</p>
+                <p id="antivirus-countdown">Обратный отсчет Антивируса: </p>
+                <p>Офис: {{ license_timer.office_timer }}</p>
+                <p id="office-countdown">Обратный отсчет Офиса: </p>
+            </div>
+        {% else %}
+            <p>No license timers found.</p>
+        {% endif %}
+        {% if user_equipment %}
+            <div class="section">
+                <h2>Моё оборудование</h2>
+                <table id="equipment-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">ID</th>
+                            <th onclick="sortTable(1)">Наименование</th>
+                            <th onclick="sortTable(2)">Описание</th>
+                            <th onclick="sortTable(3)">Категория</th>
+                            <th onclick="sortTable(4)">Статус</th>
+                            <th onclick="sortTable(5)">Пользователь</th>
+                            <th onclick="sortTable(6)">Отдел</th>
+                            <th onclick="sortTable(7)">Дата поставки</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equipment in user_equipment %}
+                        <tr>
+                            <td>{{ equipment.id_device }}</td>
+                            <td>{{ equipment.name }}</td>
+                            <td>{{ equipment.description }}</td>
+                            <td>{{ equipment.category }}</td>
+                            <td>{{ equipment.status }}</td>
+                            <td>{{ equipment.user }}</td>
+                            <td>{{ equipment.group }}</td>
+                            <td>{{ equipment.delivery_date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="printTable()">Печать</button>
+            </div>
+        {% else %}
+            <p>У вас нет оборудования.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        // Функция для обратного отсчета
+        function startCountdown(countDownDate, countdownElementId) {
+            // Обновляйте отсчет каждую секунду
+            var x = setInterval(function() {
+                // Получите текущую дату и время
+                var now = new Date().getTime();
+
+                // Найдите расстояние между текущей датой и датой отсчета
+                var distance = countDownDate - now;
+
+                // Вычисления для дней, часов, минут и секунд
+                var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Вывод результата в соответствующий элемент
+                document.getElementById(countdownElementId).innerHTML = "Обратный отсчет: " + days + "д " + hours + "ч " + minutes + "м " + seconds + "с ";
+
+                // Если отсчет закончен, напишите какое-то сообщение 
+                if (distance < 0) {
+                    clearInterval(x);
+                    document.getElementById(countdownElementId).innerHTML = "Лицензия истекла!";
+                }
+            }, 1000);
+        }
+
+        // Запуск обратного отсчета для каждого таймера
+        startCountdown(new Date("2024-09-18T06:00:00"), "os-countdown");
+        startCountdown(new Date("2025-01-15T06:00:00"), "antivirus-countdown");
+        startCountdown(new Date("2024-12-18T06:00:00"), "office-countdown");
+
+        // Функция для сортировки таблицы
+        function sortTable(column) {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("equipment-table");
+            switching = true;
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < rows.length - 1; i++) {
+                    shouldSwitch = false;
+                    x = rows[i].cells[column].textContent;
+                    y = rows[i + 1].cells[column].textContent;
+                    if (column === 3) {
+                        // Сортировка по категориям
+                        if (x.toLowerCase() > y.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (column === 4) {
+                        // Сортировка по статусам
+                        if (x.toLowerCase() > y.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else {
+                        // Сортировка по другим столбцам
+                        if (x.toLowerCase() > y.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+
+        // Функция для печати таблицы
+        function printTable() {
+            var table = document.getElementById("equipment-table");
+            var printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Equipment</title></head><body>');
+            printWindow.document.write(table.outerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>
+

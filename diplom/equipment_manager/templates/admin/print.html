@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+	<style>
+	    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Стили для таблицы */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+        background-color: #f2f2f2;
+    }
+    
+    /* Стили для кнопки печати */
+    .print-button {
+        display: block;
+        width: 150px;
+        padding: 10px;
+        background-color: #4CAF50;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 0 auto;
+    }
+    
+    .print-button:hover {
+        background-color: #45a049;
+    }
+    
+    /* Стили для печати */
+    @media print {
+        .no-print { display: none; }
+        
+        body {
+            font-size: 12px;
+        }
+        
+        table {
+            border: none;
+        }
+        
+        th, td {
+            padding: 5px;
+            border-bottom: 1px solid #000;
+        }
+        
+        th {
+            background-color: transparent;
+        }
+    }
+</style>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Категория</th>
+                <th>Статус</th>
+                <th>Пользователь</th>
+                <th>Отдел</th>
+                <th>Дата доставки</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in objects %}
+            <tr>
+                <td>{{ obj.id_device }}</td>
+                <td>{{ obj.name }}</td>
+                <td>{{ obj.description }}</td>
+                <td>{{ obj.category }}</td>
+                <td>{{ obj.status }}</td>
+                <td>{{ obj.user }}</td>
+                <td>{{ obj.group }}</td>
+                <td>{{ obj.delivery_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button onclick="window.print()">Распечатать</button>
+</body>
+</html>
+

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заявки</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .container {
+            width: 80%;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .table th {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .status.open {
+            color: #4CAF50;
+        }
+        .status.closed {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if request.user.is_authenticated %}
+            <p>Вы залогинены как {{ request.user.username }}</p>
+        {% else %}
+            <p>Вы не залогинены</p>
+        {% endif %}
+        <h1>Пользовательские заявки</h1>
+        <button class="btn btn-primary" onclick="printTable()">Печать</button>
+	<table class="table" id="myTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">ID заявки</th>
+                    <th onclick="sortTable(1)">Дата создания</th>
+                    <th onclick="sortTable(2)">Название проблемы</th>
+                    <th onclick="sortTable(3)">Описание проблемы</th>
+                    <th onclick="sortTable(4)">Статус</th>
+                    <th onclick="sortTable(5)">Дата завершения</th>
+					<th>Оставить отзыв</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for problem in user_problem %}
+                    <tr>
+                        <td>{{ problem.id_request }}</td>
+                        <td>{{ problem.request_from_date }}</td>
+                        <td>{{ problem.name_of_problem }}</td>
+                        <td>{{ problem.description_of_problem }}</td>
+                        <td><span class="status {% if problem.status == 'Open' %}open{% else %}closed{% endif %}">{{ problem.status }}</span></td>
+                        <td>{{ problem.date_of_finish }}</td>
+						{% if problem.status == 'Выполнена' %}
+							<td><a href="{% url 'techsupport:feedback_create' problem.id_request %}">Оставить отзыв</a></td>
+						{% else %}
+							<td></td>
+						{% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function sortTable(column) {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < rows.length - 1; i++) {
+                    shouldSwitch = false;
+                    x = rows[i].cells[column].textContent;
+                    y = rows[i + 1].cells[column].textContent;
+                    if (column === 1 || column === 5) {
+                        // Сортировка по датам
+                        var xDate = new Date(x);
+                        var yDate = new Date(y);
+                        if (xDate > yDate) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (column === 4) {
+                        // Сортировка по статусам
+                        if (x.toLowerCase() > y.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else {
+                        // Сортировка по другим столбцам
+                        if (x.toLowerCase() > y.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+        function printTable() {
+            var table = document.getElementById("myTable");
+            var printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>User Problems</title></head><body>');
+            printWindow.document.write(table.outerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>
+

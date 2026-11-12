@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Профиль</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .container {
+            width: 80%;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .nav {
+            margin-bottom: 20px;
+        }
+        .nav button {
+            width: 100%;
+            height: 40px;
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .nav button:hover {
+            background-color: #3e8e41;
+        }
+        .nav a {
+            text-decoration: none;
+            color: #333;
+        }
+        .nav a:hover {
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Профиль</h1>
+        <div class="nav">
+            <a href="{% url 'techsupport:user_problem' %}">
+                <button>Мои заявки</button>
+            </a>
+            <a href="{% url 'techsupport:create_problem' %}">
+                <button>Создать заявку</button>
+            </a>
+            <a href="{% url 'equipment_manager:dashboard' %}">
+                <button>Моё оборудование</button>
+            </a>
+            <form action="{% url 'techsupport:user_login' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Выйти</button>
+            </form>
+        </div>
+        <!-- Add user profile information here -->
+    </div>
+</body>
+</html>
+

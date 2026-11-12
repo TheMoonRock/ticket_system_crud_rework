@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Computer List</title>
+</head>
+<body>
+    <h1>Computer List</h1>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Serial Number</th>
+                <th>Assigned User</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for computer in computers %}
+            <tr>
+                <td>{{ computer.name }}</td>
+                <td>{{ computer.serial_number }}</td>
+                <td>{{ computer.assigned_user }}</td>
+                <td>{{ computer.location }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <a href="{% url 'equipment_manager:add_computer' %}">Add Computer</a>
+</body>
+</html>

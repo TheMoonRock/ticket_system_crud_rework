@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Печать заявки</title>
+    <style>
+        /* Добавьте необходимые стили для печати */
+        @media print {
+            /* Скрыть элементы, которые не нужны при печати */
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Заявка на решение проблемы</h1>
+    
+    <p><strong>Пользователь:</strong> {{ object.user }}</p>
+    <p><strong>Дата заявки:</strong> {{ object.request_from_date }}</p>
+    <p><strong>Название проблемы:</strong> {{ object.name_of_problem }}</p>
+    <p><strong>Описание проблемы:</strong> {{ object.description_of_problem }}</p>
+    
+    <p><strong>Статус:</strong> {{ object.status }}</p>
+    <p><strong>Дата завершения:</strong> {{ object.date_of_finish }}</p>
+    
+    <button class="no-print" onclick="window.print()">Печать</button>
+</body>
+</html>
