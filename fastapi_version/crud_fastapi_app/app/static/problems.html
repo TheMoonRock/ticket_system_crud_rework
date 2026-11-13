@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Заявки техподдержки</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem; background: #f7f7f9; }
+  h1   { font-size: 1.4rem; }
+  table { border-collapse: collapse; background: #fff; width: 100%;
+          box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  th, td { padding: .5rem .8rem; border-bottom: 1px solid #eee;
+           text-align: left; vertical-align: top; }
+  th { background: #4a6fa5; color: #fff; }
+  tr:hover td { background: #f0f4fa; }
+  .status { color: #666; margin: .5rem 0; }
+</style>
+</head>
+<body>
+<h1>Заявки техподдержки</h1>
+<div id="status" class="status">Загрузка…</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th><th>Дата</th><th>Проблема</th><th>Описание</th>
+      <th>Статус</th><th>Дата закрытия</th><th>User</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<script>
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function load() {
+  const status = document.getElementById('status');
+  try {
+    const r = await fetch('/api/problems');
+    if (!r.ok) throw new Error(r.status + ' ' + r.statusText);
+    const rows = await r.json();
+
+    document.getElementById('tbody').innerHTML = rows.map(p => `
+      <tr>
+        <td>${p.id_request}</td>
+        <td>${p.request_from_date ?? ''}</td>
+        <td>${esc(p.name_of_problem)}</td>
+        <td>${esc(p.description_of_problem ?? '')}</td>
+        <td>${esc(p.status)}</td>
+        <td>${p.date_of_finish ?? ''}</td>
+        <td>${p.user_id}</td>
+      </tr>`).join('');
+
+    status.textContent = `Всего заявок: ${rows.length}`;
+  } catch (e) {
+    status.textContent = 'Ошибка: ' + e.message;
+  }
+}
+load();
+</script>
+</body>
+</html>

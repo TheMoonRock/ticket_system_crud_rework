@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Заявки техподдержки</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem; background: #f7f7f9; }
+  h1 { font-size: 1.4rem; }
+  table { border-collapse: collapse; background: #fff; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  th, td { padding: .5rem .8rem; border-bottom: 1px solid #eee; text-align: left; vertical-align: top; }
+  th { background: #4a6fa5; color: #fff; }
+  tr:hover td { background: #f0f4fa; }
+  input, textarea, select, button { font: inherit; padding: .35rem .5rem; box-sizing: border-box; }
+  textarea { resize: vertical; min-height: 2.2rem; width: 100%; }
+  .toolbar { margin: 1rem 0; display: flex; gap: .5rem; flex-wrap: wrap; align-items: start; }
+  .toolbar input, .toolbar textarea { flex: 1 1 180px; }
+  button { cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
+  button.primary { background: #4a6fa5; color: #fff; border-color: #4a6fa5; }
+  button.danger { color: #c0392b; border-color: #e0b4ae; }
+  .status { font-size: .85rem; color: #666; margin: .5rem 0; }
+</style>
+</head>
+<body>
+  <h1>Заявки техподдержки</h1>
+
+  <div class="toolbar">
+    <input id="f_title" placeholder="Заголовок" />
+    <input id="f_desc"  placeholder="Описание" />
+    <select id="f_status">
+      <option value="new">new</option>
+      <option value="in_progress">in_progress</option>
+      <option value="closed">closed</option>
+    </select>
+    <select id="f_priority">
+      <option value="low">low</option>
+      <option value="normal" selected>normal</option>
+      <option value="high">high</option>
+    </select>
+    <button class="primary" onclick="createProblem()">Добавить</button>
+  </div>
+
+  <div id="status" class="status"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Заголовок</th><th>Описание</th><th>Статус</th>
+        <th>Приоритет</th><th>Создано</th><th></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+<script>
+const $ = id => document.getElementById(id);
+const setStatus = s => $('status').textContent = s || '';
+
+async function api(url, opts = {}) {
+  const r = await fetch(url, opts);
+  if (!r.ok) {
+    let msg = r.statusText;
+    try { msg = (await r.json()).detail || msg; } catch {}
+    throw new Error(`${r.status}: ${msg}`);
+  }
+  return r.status === 204 ? null : r.json();
+}
+
+async function load() {
+  setStatus('Загрузка…');
+  try {
+    const rows = await api('/api/problems');
+    const tbody = $('tbody');
+    tbody.innerHTML = rows.map(p => `
+      <tr data-id="${p.id}">
+        <td>${p.id}</td>
+        <td><input class="e_title" value="${esc(p.title)}"></td>
+        <td><textarea class="e_desc">${esc(p.description ?? '')}</textarea></td>
+        <td>
+          <select class="e_status">
+            ${['new','in_progress','closed'].map(v =>
+              `<option ${v === p.status ? 'selected' : ''}>${v}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select class="e_priority">
+            ${['low','normal','high'].map(v =>
+              `<option ${v === p.priority ? 'selected' : ''}>${v}</option>`).join('')}
+          </select>
+        </td>
+        <td>${p.created_at ? new Date(p.created_at).toLocaleString() : ''}</td>
+        <td>
+          <button onclick="save(${p.id}, this)" title="Сохранить">💾</button>
+          <button class="danger" onclick="remove(${p.id})" title="Удалить">✕</button>
+        </td>
+      </tr>`).join('');
+    setStatus(`Всего: ${rows.length}`);
+  } catch (e) { setStatus('Ошибка: ' + e.message); }
+}
+
+async function createProblem() {
+  const title = $('f_title').value.trim();
+  if (!title) return setStatus('Заголовок обязателен');
+  try {
+    await api('/api/problems', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        description: $('f_desc').value.trim() || null,
+        status: $('f_status').value,
+        priority: $('f_priority').value,
+      }),
+    });
+    $('f_title').value = ''; $('f_desc').value = '';
+    await load();
+  } catch (e) { setStatus('Ошибка: ' + e.message); }
+}
+
+async function save(id, btn) {
+  const tr = btn.closest('tr');
+  try {
+    await api(`/api/problems/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: tr.querySelector('.e_title').value.trim(),
+        description: tr.querySelector('.e_desc').value.trim() || null,
+        status: tr.querySelector('.e_status').value,
+        priority: tr.querySelector('.e_priority').value,
+      }),
+    });
+    setStatus(`Заявка #${id} сохранена`);
+    await load();
+  } catch (e) { setStatus('Ошибка: ' + e.message); }
+}
+
+async function remove(id) {
+  if (!confirm(`Удалить заявку #${id}?`)) return;
+  try {
+    await api(`/api/problems/${id}`, { method: 'DELETE' });
+    await load();
+  } catch (e) { setStatus('Ошибка: ' + e.message); }
+}
+
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+load();
+</script>
+</body>
+</html>
